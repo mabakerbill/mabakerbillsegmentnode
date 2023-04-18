@@ -218,6 +218,7 @@ export class Publisher {
           return batch.resolveEvents()
         }
 
+        console.log('fetching', this._url);
         const response = await fetch(this._url, requestInit)
 
         clearTimeout(timeoutId)
