@@ -143,6 +143,7 @@ export class Publisher {
                     headers: requestInit.headers,
                     body: requestInit.body,
                 });
+                console.log('fetching', this._url);
                 const response = await fetch(this._url, requestInit);
                 clearTimeout(timeoutId);
                 if (response.ok) {

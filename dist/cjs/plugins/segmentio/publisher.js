@@ -146,6 +146,7 @@ class Publisher {
                     headers: requestInit.headers,
                     body: requestInit.body,
                 });
+                console.log('fetching', this._url);
                 const response = await (0, fetch_1.fetch)(this._url, requestInit);
                 clearTimeout(timeoutId);
                 if (response.ok) {
