@@ -8,6 +8,8 @@ import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
 
+import HttpsProxyAgent from 'https-proxy-agent';
+
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
 }
@@ -70,6 +72,11 @@ export class Publisher {
     )
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
     this._disable = Boolean(disable)
+
+    if (process.env.HTTPS_PROXY) {
+      console.log('HTTPS_PROXY is present, creating proxy agent for', process.env.HTTPS_PROXY);
+      this._proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY);
+    }
   }
 
   private createBatch(): ContextBatch {
@@ -204,6 +211,7 @@ export class Publisher {
             'User-Agent': 'analytics-node-next/latest',
           },
           body: payload,
+          agent: this._proxyAgent,
         }
 
         this._emitter.emit('http_request', {

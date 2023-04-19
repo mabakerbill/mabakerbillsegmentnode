@@ -8,6 +8,9 @@ const extract_promise_parts_1 = require("../../lib/extract-promise-parts");
 const fetch_1 = require("../../lib/fetch");
 const context_batch_1 = require("./context-batch");
 const base_64_encode_1 = require("../../lib/base-64-encode");
+
+const HttpsProxyAgent = require('https-proxy-agent');
+
 function sleep(timeoutInMs) {
     return new Promise((resolve) => setTimeout(resolve, timeoutInMs));
 }
@@ -24,6 +27,10 @@ class Publisher {
         this._auth = (0, base_64_encode_1.b64encode)(`${writeKey}:`);
         this._url = (0, create_url_1.tryCreateFormattedUrl)(host ?? 'https://api.segment.io', path ?? '/v1/batch');
         this._httpRequestTimeout = httpRequestTimeout ?? 10000;
+        if (process.env.HTTPS_PROXY) {
+          console.log('HTTPS_PROXY is present, creating proxy agent for', process.env.HTTPS_PROXY);
+          this._proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY);
+        }
     }
     createBatch() {
         this.pendingFlushTimeout && clearTimeout(this.pendingFlushTimeout);
@@ -139,6 +146,7 @@ class Publisher {
                         'User-Agent': 'analytics-node-next/latest',
                     },
                     body: payload,
+                    agent: this._proxyAgent,
                 };
                 this._emitter.emit('http_request', {
                     url: this._url,

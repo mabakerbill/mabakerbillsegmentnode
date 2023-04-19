@@ -5,6 +5,9 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts';
 import { fetch } from '../../lib/fetch';
 import { ContextBatch } from './context-batch';
 import { b64encode } from '../../lib/base-64-encode';
+
+import HttpsProxyAgent from 'https-proxy-agent';
+
 function sleep(timeoutInMs) {
     return new Promise((resolve) => setTimeout(resolve, timeoutInMs));
 }
@@ -21,6 +24,10 @@ export class Publisher {
         this._auth = b64encode(`${writeKey}:`);
         this._url = tryCreateFormattedUrl(host ?? 'https://api.segment.io', path ?? '/v1/batch');
         this._httpRequestTimeout = httpRequestTimeout ?? 10000;
+        if (process.env.HTTPS_PROXY) {
+          console.log('HTTPS_PROXY is present, creating proxy agent for', process.env.HTTPS_PROXY);
+          this._proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY);
+        }
     }
     createBatch() {
         this.pendingFlushTimeout && clearTimeout(this.pendingFlushTimeout);
@@ -136,6 +143,7 @@ export class Publisher {
                         'User-Agent': 'analytics-node-next/latest',
                     },
                     body: payload,
+                    agent: this._proxyAgent,
                 };
                 this._emitter.emit('http_request', {
                     url: this._url,
