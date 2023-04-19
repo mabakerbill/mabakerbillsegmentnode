@@ -14,7 +14,6 @@
 !.vscode/settings.json
 
 node_modules
-dist
 package-lock.json
 .DS_Store
 *.log
